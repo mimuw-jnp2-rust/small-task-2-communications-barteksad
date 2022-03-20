@@ -104,10 +104,10 @@ impl Client {
                     // all other responses are just forwarded
                     response => response,
                 },
-                Connection::Closed => return Err(CommsError::ConnectionClosed(String::from(addr))),
+                Connection::Closed => Err(CommsError::ConnectionClosed(String::from(addr))),
             }
         } else {
-            return Err(CommsError::ConnectionNotFound(String::from(addr)));
+            Err(CommsError::ConnectionNotFound(String::from(addr)))
         }
     }
 
@@ -116,9 +116,9 @@ impl Client {
     #[allow(dead_code)]
     fn is_open(&self, addr: &str) -> bool {
         match self.connections.get(addr) {
-            Some(Connection::Open(_)) => return true,
-            Some(Connection::Closed) => return false,
-            None => return false,
+            Some(Connection::Open(_)) => true,
+            Some(Connection::Closed) => false,
+            None => false,
         }
     }
 
@@ -151,9 +151,9 @@ struct Server {
 impl Server {
     fn new(name: String, limit: u32) -> Server {
         Server {
-            name: name,
+            name,
             post_count: 0,
-            limit: limit,
+            limit,
             connected_client: None,
         }
     }
@@ -173,9 +173,9 @@ impl Server {
             } => {
                 if self.connected_client == None {
                     self.connected_client = Some(load);
-                    return Ok(Response::HandshakeReceived);
+                    Ok(Response::HandshakeReceived)
                 } else {
-                    return Err(CommsError::UnexpectedHandshake(self.name.clone()));
+                    Err(CommsError::UnexpectedHandshake(self.name.clone()))
                 }
             }
 
